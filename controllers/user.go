@@ -1,8 +1,9 @@
 package controllers
 
 import (
-	"github.com/Iverson/pusher-api/models"
 	"encoding/json"
+
+	"github.com/Iverson/pusher-api/models"
 
 	"github.com/astaxie/beego"
 )
@@ -116,4 +117,3 @@ func (u *UserController) Logout() {
 	u.Data["json"] = "logout success"
 	u.ServeJson()
 }
-

@@ -25,6 +25,11 @@ func init() {
 				&controllers.UserController{},
 			),
 		),
+		beego.NSNamespace("/ws",
+			beego.NSInclude(
+				&controllers.WebsocketController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }

@@ -90,4 +90,18 @@ func init() {
 			[]string{"get"},
 			nil})
 
+	beego.GlobalControllerRouter["github.com/Iverson/pusher-api/controllers:WebsocketController"] = append(beego.GlobalControllerRouter["github.com/Iverson/pusher-api/controllers:WebsocketController"],
+		beego.ControllerComments{
+			"GetAll",
+			`/`,
+			[]string{"get"},
+			nil})
+
+	beego.GlobalControllerRouter["github.com/Iverson/pusher-api/controllers:WebsocketController"] = append(beego.GlobalControllerRouter["github.com/Iverson/pusher-api/controllers:WebsocketController"],
+		beego.ControllerComments{
+			"Post",
+			`/`,
+			[]string{"post"},
+			nil})
+
 }
