@@ -30,13 +30,13 @@ type WebsocketController struct {
 // @Title Get
 // @Description get all Users
 // @Success 200 {object} models.User
-// @router / [get]
-func (this *WebsocketController) GetAll() {
-	uname := this.GetString("name")
+// @router /app/:key [get]
+func (this *WebsocketController) Connect() {
+	appKey := this.Ctx.Input.Params[":key"]
 	uuid := uuid.New()
-	if len(uname) == 0 {
-		this.Redirect("/", 302)
-		return
+
+	if !this.checkAppKey(appKey) {
+		http.Error(this.Ctx.ResponseWriter, "Wrong app key", 400)
 	}
 
 	// Upgrade from http request to WebSocket.
@@ -60,8 +60,12 @@ func (this *WebsocketController) GetAll() {
 		if err != nil {
 			return
 		}
-		publish <- models.Event{User: uname, Content: string(p)}
+		publish <- models.Event{User: uuid, Content: string(p)}
 	}
+}
+
+func (this *WebsocketController) checkAppKey(key string) bool {
+	return key == "secret-app-key"
 }
 
 // @Title createUser
