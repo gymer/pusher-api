@@ -1,0 +1,19 @@
+{
+	"ImportPath": "github.com/Iverson/pusher-api",
+	"GoVersion": "go1.5",
+	"Deps": [
+		{
+			"ImportPath": "github.com/astaxie/beego",
+			"Comment": "v1.5.0-3-ga89f14d",
+			"Rev": "a89f14d80dab442927bdc11d641aa1250ab8ad71"
+		},
+		{
+			"ImportPath": "github.com/gorilla/websocket",
+			"Rev": "13e4d0621caa4d77fd9aa470ef6d7ab63d1a5e41"
+		},
+		{
+			"ImportPath": "github.com/pborman/uuid",
+			"Rev": "cccd189d45f7ac3368a0d127efb7f4d08ae0b655"
+		}
+	]
+}
