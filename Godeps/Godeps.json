@@ -12,8 +12,21 @@
 			"Rev": "13e4d0621caa4d77fd9aa470ef6d7ab63d1a5e41"
 		},
 		{
+			"ImportPath": "github.com/jinzhu/gorm",
+			"Rev": "37bf87aa2990b7753a4be804f2acd1ba55f27c48"
+		},
+		{
+			"ImportPath": "github.com/lib/pq",
+			"Comment": "go1.0-cutoff-59-gb269bd0",
+			"Rev": "b269bd035a727d6c1081f76e7a239a1b00674c40"
+		},
+		{
 			"ImportPath": "github.com/pborman/uuid",
 			"Rev": "cccd189d45f7ac3368a0d127efb7f4d08ae0b655"
+		},
+		{
+			"ImportPath": "github.com/qor/inflection",
+			"Rev": "45321e63b98c756df17369c027c1df89298e1288"
 		}
 	]
 }
