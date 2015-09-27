@@ -21,11 +21,17 @@ func init() {
 
 	db.DB()
 	migrations()
+
+	if beego.RunMode == "dev" {
+		seed()
+	}
 }
 
 func migrations() {
 	db.AutoMigrate(&User{}, &App{})
+}
 
+func seed() {
 	user := User{}
 	app := App{}
 	db.FirstOrCreate(&user, User{Email: "test@test.com", Password: "qwerty"})
