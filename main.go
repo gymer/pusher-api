@@ -1,8 +1,8 @@
 package main
 
 import (
-	_ "github.com/Iverson/pusher-api/docs"
-	_ "github.com/Iverson/pusher-api/routers"
+	_ "github.com/gymer/pusher-api/docs"
+	_ "github.com/gymer/pusher-api/routers"
 
 	"github.com/astaxie/beego"
 )

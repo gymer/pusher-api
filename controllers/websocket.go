@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Iverson/pusher-api/models"
 	"github.com/gorilla/websocket"
+	"github.com/gymer/pusher-api/models"
 	"github.com/pborman/uuid"
 
 	"github.com/astaxie/beego"

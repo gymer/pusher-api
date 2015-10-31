@@ -1,8 +1,9 @@
 package controllers
 
 import (
-	"github.com/Iverson/pusher-api/models"
 	"encoding/json"
+
+	"github.com/gymer/pusher-api/models"
 
 	"github.com/astaxie/beego"
 )
@@ -89,4 +90,3 @@ func (o *ObjectController) Delete() {
 	o.Data["json"] = "delete success!"
 	o.ServeJson()
 }
-

@@ -8,7 +8,7 @@
 package routers
 
 import (
-	"github.com/Iverson/pusher-api/controllers"
+	"github.com/gymer/pusher-api/controllers"
 
 	"github.com/astaxie/beego"
 )
