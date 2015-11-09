@@ -51,8 +51,10 @@ func (this *WebsocketController) Connect() {
 
 	// Join chat room.
 	log.Printf("New websocket connection: %s \n", uuid)
-	defer log.Println("Close websocket connection")
 	subscribers.PushBack(models.Subscriber{Uuid: uuid, Conn: ws})
+	defer func(uuid string) {
+		unsubscribe <- uuid
+	}(uuid)
 
 	// Message receive loop.
 	for {
