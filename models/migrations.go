@@ -7,33 +7,29 @@ import (
 )
 
 var (
-	db  gorm.DB
+	DB  gorm.DB
 	err error
 )
 
 func init() {
-	db, err = gorm.Open("postgres", "user=postgres dbname=gymer_dev sslmode=disable")
+	DB, err = gorm.Open("postgres", "user=postgres dbname=gymmer_development sslmode=disable")
 
 	if err != nil {
 		beego.Error(err)
 		return
 	}
 
-	db.DB()
-	migrations()
-
-	if beego.RunMode == "dev" {
-		seed()
-	}
+	DB.DB()
+	// migrations()
 }
 
 func migrations() {
-	db.AutoMigrate(&User{}, &App{})
+	// DB.AutoMigrate(&User{}, &App{})
 }
 
-func seed() {
-	user := User{}
-	app := App{}
-	db.FirstOrCreate(&user, User{Email: "test@test.com", Password: "qwerty"})
-	db.FirstOrCreate(&app, App{Name: "Test App", UserID: user.ID})
-}
+// func seed() {
+// 	user := User{}
+// 	app := App{}
+// 	DB.FirstOrCreate(&user, User{Email: "test@test.com", Password: "qwerty"})
+// 	DB.FirstOrCreate(&app, App{Name: "Test App", UserID: user.ID})
+// }

@@ -12,7 +12,8 @@ type Message struct {
 	message string
 }
 
-type Subscriber struct {
-	Uuid string
-	Conn *websocket.Conn
+type WSClient struct {
+	AppID string
+	Uuid  string
+	Conn  *websocket.Conn
 }

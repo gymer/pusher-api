@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"container/list"
 	"log"
 	"net/http"
 
@@ -12,17 +11,6 @@ import (
 	"github.com/astaxie/beego"
 )
 
-var (
-	// Channel for new join users.
-	unsubscribe = make(chan string, 10)
-	// Send events here to publish them.
-	publish = make(chan models.Event, 10)
-	// Long polling waiting list.
-	waitingList = list.New()
-	subscribers = list.New()
-)
-
-// Operations about Users
 type WebsocketController struct {
 	beego.Controller
 }
@@ -31,30 +19,35 @@ type WebsocketController struct {
 // @Description get all Users
 // @Success 200 {object} models.User
 // @router /app/:key [get]
-func (this *WebsocketController) Connect() {
-	appKey := this.Ctx.Input.Params[":key"]
+func (w *WebsocketController) Connect() {
+	appKey := w.Ctx.Input.Params[":key"]
 	uuid := uuid.New()
 
-	if !this.checkAppKey(appKey) {
-		http.Error(this.Ctx.ResponseWriter, "Wrong app key", 400)
+	// Validate client_access_token
+	app, err := w.findApp(appKey)
+
+	if err != nil {
+		http.Error(w.Ctx.ResponseWriter, "Wrong app key", 400)
 	}
 
 	// Upgrade from http request to WebSocket.
-	ws, err := websocket.Upgrade(this.Ctx.ResponseWriter, this.Ctx.Request, nil, 1024, 1024)
+	ws, err := websocket.Upgrade(w.Ctx.ResponseWriter, w.Ctx.Request, nil, 1024, 1024)
 	if _, ok := err.(websocket.HandshakeError); ok {
-		http.Error(this.Ctx.ResponseWriter, "Not a websocket handshake", 400)
+		http.Error(w.Ctx.ResponseWriter, "Not a websocket handshake", 400)
 		return
 	} else if err != nil {
 		beego.Error("Cannot setup WebSocket connection:", err)
 		return
 	}
 
+	client := models.WSClient{Uuid: uuid, Conn: ws, AppID: app.ID}
+
 	// Join chat room.
+	log.Printf("Store: %+v \n", store)
 	log.Printf("New websocket connection: %s \n", uuid)
-	subscribers.PushBack(models.Subscriber{Uuid: uuid, Conn: ws})
-	defer func(uuid string) {
-		unsubscribe <- uuid
-	}(uuid)
+
+	Connect(client)
+	defer Disconnect(client)
 
 	// Message receive loop.
 	for {
@@ -66,52 +59,11 @@ func (this *WebsocketController) Connect() {
 	}
 }
 
-func (this *WebsocketController) checkAppKey(key string) bool {
-	return key == "secret-app-key"
-}
+func (w *WebsocketController) findApp(key string) (models.App, error) {
+	var app models.App
+	var err error
 
-// @Title createUser
-// @Description create users
-// @Param	body		body 	models.User	true		"body for user content"
-// @Success 200 {int} models.User.Id
-// @Failure 403 body is empty
-// @router / [post]
-func (u *WebsocketController) Post() {
-	log.Println(subscribers.Len())
+	err = models.DB.Debug().Where("client_access_token = ?", key).First(&app).Error
 
-	for sub := subscribers.Front(); sub != nil; sub = sub.Next() {
-		// Immediately send event to WebSocket users.
-		ws := sub.Value.(models.Subscriber).Conn
-		if ws != nil {
-			if ws.WriteMessage(websocket.TextMessage, u.Ctx.Input.RequestBody) != nil {
-				// User disconnected.
-				unsubscribe <- sub.Value.(models.Subscriber).Uuid
-			}
-		}
-	}
-}
-
-func init() {
-	go websocketDispatcher()
-}
-
-func websocketDispatcher() {
-	for {
-		select {
-		case unsub_uuid := <-unsubscribe:
-			for sub := subscribers.Front(); sub != nil; sub = sub.Next() {
-				if sub.Value.(models.Subscriber).Uuid == unsub_uuid {
-					subscribers.Remove(sub)
-					// Clone connection.
-					ws := sub.Value.(models.Subscriber).Conn
-					if ws != nil {
-						ws.Close()
-						beego.Error("WebSocket closed:", unsub_uuid)
-					}
-					// publish <- newEvent(models.EVENT_LEAVE, unsub_uuid, "")
-					break
-				}
-			}
-		}
-	}
+	return app, err
 }
