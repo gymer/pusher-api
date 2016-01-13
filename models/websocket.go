@@ -8,8 +8,8 @@ type Event struct {
 }
 
 type Message struct {
-	event   string
-	message string
+	Event string            `json:"event"`
+	Data  map[string]string `json:"data"`
 }
 
 type WSClient struct {

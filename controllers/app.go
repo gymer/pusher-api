@@ -2,9 +2,11 @@ package controllers
 
 import (
 	"container/list"
+	"encoding/json"
 	"log"
 
 	"github.com/astaxie/beego"
+	"github.com/gorilla/websocket"
 
 	"github.com/gymer/pusher-api/models"
 )
@@ -26,6 +28,19 @@ func Connect(client models.WSClient) {
 
 func Disconnect(client models.WSClient) {
 	wsDisconnect <- client
+}
+
+func PushMessage(client models.WSClient, message models.Message) {
+	ws := client.Conn
+	b, err := json.Marshal(message)
+	if err != nil {
+		log.Printf("error: %+v", err)
+	}
+	ws.WriteMessage(websocket.TextMessage, b)
+}
+
+func createServiceMessage(name string, data map[string]string) models.Message {
+	return models.Message{Event: "gymmer:" + name, Data: data}
 }
 
 func init() {
@@ -50,7 +65,13 @@ func storeDispatcher() {
 		case connect_client := <-wsConnect:
 			var app *models.App = findOrAddApp(connect_client.AppID)
 			log.Printf("%+v", app)
+
 			app.AddClient(connect_client)
+			data := map[string]string{
+				"socket_id": connect_client.Uuid,
+			}
+			PushMessage(connect_client, createServiceMessage("connection_established", data))
+
 		case disconnect_client := <-wsDisconnect:
 			var app *models.App = findOrAddApp(disconnect_client.AppID)
 
