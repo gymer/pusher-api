@@ -2,11 +2,9 @@ package controllers
 
 import (
 	"container/list"
-	"encoding/json"
 	"log"
 
-	"github.com/astaxie/beego"
-	"github.com/gorilla/websocket"
+	"github.com/astaxie/beego/logs"
 
 	"github.com/gymer/pusher-api/models"
 )
@@ -16,40 +14,68 @@ type DataStore struct {
 }
 
 var (
+	Logger       *logs.BeeLogger
 	store        = DataStore{Apps: make(map[string]*models.App)}
-	wsConnect    = make(chan models.WSClient)
-	wsDisconnect = make(chan models.WSClient)
-	publish      = make(chan models.Event, 10)
+	wsConnect    = make(chan *models.WSClient)
+	wsDisconnect = make(chan *models.WSClient)
+	wsMessage    = make(chan models.WSMessage, 10)
 )
 
-func Connect(client models.WSClient) {
+func connect(client *models.WSClient) {
 	wsConnect <- client
 }
 
-func Disconnect(client models.WSClient) {
+func disconnect(client *models.WSClient) {
 	wsDisconnect <- client
 }
 
-func PushMessage(client models.WSClient, message models.Message) {
-	ws := client.Conn
-	b, err := json.Marshal(message)
-	if err != nil {
-		log.Printf("error: %+v", err)
+func newEvent(name string, channel string, data map[string]string) models.Event {
+	if data == nil {
+		data = make(map[string]string)
 	}
-	ws.WriteMessage(websocket.TextMessage, b)
+
+	return models.Event{Name: name, Channel: channel, Data: data}
 }
 
-func createServiceMessage(name string, data map[string]string) models.Message {
-	return models.Message{Event: "gymmer:" + name, Data: data}
+func newServiceEvent(name string, channel string, data map[string]string) models.Event {
+	return newEvent("gymmer:"+name, channel, data)
+}
+
+func broadcastEvent(app *models.App, event models.Event) int {
+	pushCount := 0
+
+	log.Printf("Subscribed: %+v", app.Subscriptions[event.Channel])
+
+	if app.Subscriptions[event.Channel] == nil {
+		return pushCount
+	}
+
+	for client, subscribed := range app.Subscriptions[event.Channel] {
+		if subscribed {
+			pushCount += 1
+			if client.Push(event) != nil {
+				disconnect(client)
+			}
+		}
+	}
+
+	return pushCount
 }
 
 func init() {
-	go storeDispatcher()
+	Logger = logs.NewLogger(10000)
+	Logger.SetLogger("console", "")
+
+	go appDispatcher()
+}
+
+func findApp(appID string) *models.App {
+	return store.Apps[appID]
 }
 
 func findOrAddApp(appID string) *models.App {
-	if store.Apps[appID] == nil {
-		store.Apps[appID] = &models.App{ID: appID, Clients: list.New()}
+	if findApp(appID) == nil {
+		store.Apps[appID] = &models.App{ID: appID, Clients: list.New(), Subscriptions: make(map[string]map[*models.WSClient]bool)}
 	}
 
 	return store.Apps[appID]
@@ -59,35 +85,47 @@ func getApp(appID string) *models.App {
 	return store.Apps[appID]
 }
 
-func storeDispatcher() {
+func appDispatcher() {
 	for {
 		select {
 		case connect_client := <-wsConnect:
 			var app *models.App = findOrAddApp(connect_client.AppID)
-			log.Printf("%+v", app)
 
 			app.AddClient(connect_client)
 			data := map[string]string{
 				"socket_id": connect_client.Uuid,
 			}
-			PushMessage(connect_client, createServiceMessage("connection_established", data))
+			connect_client.Push(newServiceEvent("connection_established", "", data))
 
 		case disconnect_client := <-wsDisconnect:
 			var app *models.App = findOrAddApp(disconnect_client.AppID)
 
-			for client := app.Clients.Front(); client != nil; client = client.Next() {
-				if client.Value.(models.WSClient).Uuid == disconnect_client.Uuid {
-					app.Clients.Remove(client)
-					// Clone connection.
-					ws := client.Value.(models.WSClient).Conn
-					if ws != nil {
-						ws.Close()
-						beego.Error("WebSocket closed:", disconnect_client.Uuid)
-					}
-					// publish <- newEvent(models.EVENT_LEAVE, disconnect_uuid, "")
-					break
-				}
+			if disconnect_client.Conn != nil {
+				disconnect_client.Conn.Close()
+				Logger.Warn("WebSocket closed: %s", disconnect_client.Uuid)
 			}
+			app.RemoveClient(disconnect_client)
+
+		case message := <-wsMessage:
+			client := message.Client
+			app := getApp(client.AppID)
+			eventName := message.Event.GetName()
+			Logger.Info("App before: %+v", app)
+
+			switch eventName {
+			case "subscribe":
+				app.SubscribeToChannel(client, message.Event.Channel)
+				client.Push(newServiceEvent("subscription_success", message.Event.Channel, nil))
+			case "unsubscribe":
+				app.UnsubscribeToChannel(client, message.Event.Channel)
+				client.Push(newServiceEvent("unsubscription_success", message.Event.Channel, nil))
+			default:
+				Logger.Info("Unknown event type: %+v", eventName)
+
+			}
+
+			Logger.Info("App after: %+v", app)
 		}
+
 	}
 }

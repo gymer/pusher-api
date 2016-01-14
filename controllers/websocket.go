@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"log"
+	"encoding/json"
 	"net/http"
 
 	"github.com/gorilla/websocket"
@@ -24,7 +24,7 @@ func (w *WebsocketController) Connect() {
 	uuid := uuid.New()
 
 	// Validate client_access_token
-	app, err := w.findApp(appKey)
+	app, err := w.findAppByAccessToken(appKey)
 
 	if err != nil {
 		http.Error(w.Ctx.ResponseWriter, "Wrong app key", 400)
@@ -41,29 +41,32 @@ func (w *WebsocketController) Connect() {
 	}
 
 	client := models.WSClient{Uuid: uuid, Conn: ws, AppID: app.ID}
+	Logger.Warn("New websocket connection: %s \n", uuid)
 
-	// Join chat room.
-	log.Printf("Store: %+v \n", store)
-	log.Printf("New websocket connection: %s \n", uuid)
-
-	Connect(client)
-	defer Disconnect(client)
+	connect(&client)
+	defer disconnect(&client)
 
 	// Message receive loop.
 	for {
+		var e models.Event
+		message := models.WSMessage{Client: &client}
+
 		_, p, err := ws.ReadMessage()
 		if err != nil {
 			return
 		}
-		publish <- models.Event{User: uuid, Content: string(p)}
+
+		json.Unmarshal(p, &e)
+		message.Event = e
+		wsMessage <- message
 	}
 }
 
-func (w *WebsocketController) findApp(key string) (models.App, error) {
+func (w *WebsocketController) findAppByAccessToken(key string) (models.App, error) {
 	var app models.App
 	var err error
 
-	err = models.DB.Debug().Where("client_access_token = ?", key).First(&app).Error
+	err = models.DB.Where("client_access_token = ?", key).First(&app).Error
 
 	return app, err
 }

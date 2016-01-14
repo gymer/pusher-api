@@ -2,13 +2,12 @@ package controllers
 
 import (
 	"encoding/base64"
-	"log"
+	"encoding/json"
 	"net/http"
 	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
-	"github.com/gorilla/websocket"
 	"github.com/gymer/pusher-api/models"
 )
 
@@ -23,6 +22,7 @@ type APIController struct {
 // @Failure 403 body is empty
 // @router /:appId/events [post]
 func (u *APIController) Post() {
+	var event models.Event
 	appId := u.Ctx.Input.Params[":appId"]
 	app := store.Apps[appId]
 
@@ -30,30 +30,21 @@ func (u *APIController) Post() {
 		return
 	}
 
-	log.Printf("Connected: %+v", app.Clients.Len())
-
-	for client := app.Clients.Front(); client != nil; client = client.Next() {
-		// Immediately send event to WebSocket users.
-		ws := client.Value.(models.WSClient).Conn
-		if ws != nil {
-			if ws.WriteMessage(websocket.TextMessage, u.Ctx.Input.RequestBody) != nil {
-				Disconnect(client.Value.(models.WSClient))
-			}
-		}
-	}
+	json.Unmarshal(u.Ctx.Input.RequestBody, &event)
+	broadcastEvent(app, event)
 }
 
 func init() {
-	beego.InsertFilter("/v1/app/*", beego.BeforeExec, APIAuthFilter)
+	beego.InsertFilter("/v1/app/*", beego.BeforeExec, apiAuthFilter)
 }
 
-func APIAuthFilter(ctx *context.Context) {
-	if !APIAuthValidate(ctx) {
-		RequireAuth(ctx.ResponseWriter)
+func apiAuthFilter(ctx *context.Context) {
+	if !apiAuthValidate(ctx) {
+		requireAuth(ctx.ResponseWriter)
 	}
 }
 
-func APIAuthValidate(ctx *context.Context) bool {
+func apiAuthValidate(ctx *context.Context) bool {
 	var app models.App
 	r := ctx.Request
 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
@@ -73,7 +64,7 @@ func APIAuthValidate(ctx *context.Context) bool {
 		return false
 	}
 
-	err = models.DB.Debug().Where("id = ? and client_access_token = ? and server_access_token = ?", appId, pair[0], pair[1]).First(&app).Error
+	err = models.DB.Where("id = ? and client_access_token = ? and server_access_token = ?", appId, pair[0], pair[1]).First(&app).Error
 	if err != nil {
 		return false
 	}
@@ -81,7 +72,7 @@ func APIAuthValidate(ctx *context.Context) bool {
 	return true
 }
 
-func RequireAuth(w http.ResponseWriter) {
+func requireAuth(w http.ResponseWriter) {
 	w.Header().Set("WWW-Authenticate", `Basic realm="API realm"`)
 	w.WriteHeader(401)
 	w.Write([]byte("401 Unauthorized\n"))
