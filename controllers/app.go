@@ -52,8 +52,9 @@ func broadcastEvent(app *models.App, event models.Event) int {
 
 	for client, subscribed := range app.Subscriptions[event.Channel] {
 		if subscribed {
-			pushCount += 1
-			if client.Push(event) != nil {
+			if err := client.Push(event); err == nil {
+				pushCount += 1
+			} else {
 				disconnect(client)
 			}
 		}
