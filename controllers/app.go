@@ -3,10 +3,18 @@ package controllers
 import (
 	"container/list"
 	"log"
+	"time"
+
+	"github.com/gorilla/websocket"
 
 	"github.com/astaxie/beego/logs"
 
 	"github.com/gymer/pusher-api/models"
+)
+
+// Close codes
+const (
+	InvalidAppCode = 4001
 )
 
 type DataStore struct {
@@ -27,6 +35,11 @@ func connect(client *models.WSClient) {
 
 func disconnect(client *models.WSClient) {
 	wsDisconnect <- client
+}
+
+func closeWS(ws *websocket.Conn, code int, reason string) {
+	ws.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(code, reason), time.Now().Add(time.Second))
+	ws.Close()
 }
 
 func newEvent(name string, channel string, data map[string]string) models.Event {

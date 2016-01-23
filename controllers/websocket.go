@@ -23,13 +23,6 @@ func (w *WebsocketController) Connect() {
 	appKey := w.Ctx.Input.Params[":key"]
 	uuid := uuid.New()
 
-	// Validate client_access_token
-	app, err := w.findAppByAccessToken(appKey)
-
-	if err != nil {
-		http.Error(w.Ctx.ResponseWriter, "Wrong app key", 400)
-	}
-
 	// Upgrade from http request to WebSocket.
 	ws, err := websocket.Upgrade(w.Ctx.ResponseWriter, w.Ctx.Request, nil, 1024, 1024)
 	if _, ok := err.(websocket.HandshakeError); ok {
@@ -37,6 +30,14 @@ func (w *WebsocketController) Connect() {
 		return
 	} else if err != nil {
 		beego.Error("Cannot setup WebSocket connection:", err)
+		return
+	}
+
+	// Validate client_access_token
+	app, err := w.findAppByAccessToken(appKey)
+
+	if err != nil {
+		closeWS(ws, InvalidAppCode, "Invalid app code")
 		return
 	}
 
