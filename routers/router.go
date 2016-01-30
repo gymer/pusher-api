@@ -20,7 +20,7 @@ func init() {
 				&controllers.WebsocketController{},
 			),
 		),
-		beego.NSNamespace("/app",
+		beego.NSNamespace("/apps",
 			beego.NSInclude(
 				&controllers.APIController{},
 			),

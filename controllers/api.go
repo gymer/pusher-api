@@ -4,12 +4,17 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
 	"github.com/gymer/pusher-api/models"
 )
+
+type httpError struct {
+	Error string `json:"error"`
+}
 
 type APIController struct {
 	beego.Controller
@@ -27,20 +32,28 @@ func (u *APIController) Post() {
 	app := store.Apps[appId]
 
 	if app == nil {
+		httpResponseError(u.Ctx.ResponseWriter, 404, "Not found App with id "+appId)
 		return
 	}
 
-	json.Unmarshal(u.Ctx.Input.RequestBody, &event)
-	broadcastEvent(app, event)
+	err := json.Unmarshal(u.Ctx.Input.RequestBody, &event)
+	if err != nil {
+		httpResponseError(u.Ctx.ResponseWriter, 400, "Invalid JSON data")
+		return
+	}
+
+	pushedClient := broadcastEvent(app, event)
+	httpResponse(u.Ctx.ResponseWriter, 200, "{\"pushed_clients\": "+strconv.Itoa(pushedClient)+"}")
 }
 
 func init() {
-	beego.InsertFilter("/v1/app/*", beego.BeforeExec, apiAuthFilter)
+	beego.InsertFilter("/v1/apps/*", beego.BeforeExec, apiAuthFilter)
 }
 
 func apiAuthFilter(ctx *context.Context) {
 	if !apiAuthValidate(ctx) {
-		requireAuth(ctx.ResponseWriter)
+		ctx.ResponseWriter.Header().Set("WWW-Authenticate", `Basic realm="API realm"`)
+		httpResponseError(ctx.ResponseWriter, 401, "Unauthorized")
 	}
 }
 
@@ -72,8 +85,19 @@ func apiAuthValidate(ctx *context.Context) bool {
 	return true
 }
 
-func requireAuth(w http.ResponseWriter) {
-	w.Header().Set("WWW-Authenticate", `Basic realm="API realm"`)
-	w.WriteHeader(401)
-	w.Write([]byte("401 Unauthorized\n"))
+func httpResponseError(w http.ResponseWriter, status int, message string) {
+	error := httpError{message}
+	b, _ := json.Marshal(error)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	w.Write(b)
+	w.Write([]byte("\n"))
+}
+
+func httpResponse(w http.ResponseWriter, status int, body string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	w.Write([]byte(body))
+	w.Write([]byte("\n"))
 }
