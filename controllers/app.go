@@ -76,19 +76,15 @@ func broadcastEvent(app *models.App, event models.Event) int {
 	return pushCount
 }
 
-func init() {
+func AppStart() {
 	Logger = logs.NewLogger(10000)
 	Logger.SetLogger("console", "")
 
 	go appDispatcher()
 }
 
-func findApp(appID string) *models.App {
-	return store.Apps[appID]
-}
-
 func findOrAddApp(appID string) *models.App {
-	if findApp(appID) == nil {
+	if getApp(appID) == nil {
 		store.Apps[appID] = &models.App{ID: appID, Clients: list.New(), Subscriptions: make(map[string]map[*models.WSClient]bool)}
 	}
 

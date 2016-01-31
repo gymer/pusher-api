@@ -1,8 +1,9 @@
 package main
 
 import (
+	"github.com/gymer/pusher-api/controllers"
 	_ "github.com/gymer/pusher-api/docs"
-	_ "github.com/gymer/pusher-api/routers"
+	"github.com/gymer/pusher-api/routers"
 
 	"github.com/astaxie/beego"
 )
@@ -13,5 +14,7 @@ func main() {
 		beego.StaticDir["/swagger"] = "swagger"
 	}
 
+	routers.Config()
+	controllers.AppStart()
 	beego.Run()
 }

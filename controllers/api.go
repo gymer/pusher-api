@@ -2,9 +2,6 @@ package controllers
 
 import (
 	"encoding/base64"
-	"encoding/json"
-	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/astaxie/beego"
@@ -12,48 +9,24 @@ import (
 	"github.com/gymer/pusher-api/models"
 )
 
+type ApiBaseController struct {
+	beego.Controller
+}
+
+type flatJson map[string]interface{}
+
 type httpError struct {
 	Error string `json:"error"`
 }
 
-type APIController struct {
-	beego.Controller
-}
-
-// @Title Push event
-// @Description Push event with data to app specific channel
-// @Param body    body  models.Event true    "body for event content"
-// @Success 200 body is empty
-// @Failure 403 body is empty
-// @router /:appId/events [post]
-func (u *APIController) Post() {
-	var event models.Event
-	appId := u.Ctx.Input.Params[":appId"]
-	app := store.Apps[appId]
-
-	if app == nil {
-		httpResponseError(u.Ctx.ResponseWriter, 404, "Not found App with id "+appId)
-		return
-	}
-
-	err := json.Unmarshal(u.Ctx.Input.RequestBody, &event)
-	if err != nil {
-		httpResponseError(u.Ctx.ResponseWriter, 400, "Invalid JSON data")
-		return
-	}
-
-	pushedClient := broadcastEvent(app, event)
-	httpResponse(u.Ctx.ResponseWriter, 200, "{\"pushed_clients\": "+strconv.Itoa(pushedClient)+"}")
-}
-
-func init() {
+func ApiFilters() {
 	beego.InsertFilter("/v1/apps/*", beego.BeforeExec, apiAuthFilter)
 }
 
 func apiAuthFilter(ctx *context.Context) {
 	if !apiAuthValidate(ctx) {
 		ctx.ResponseWriter.Header().Set("WWW-Authenticate", `Basic realm="API realm"`)
-		httpResponseError(ctx.ResponseWriter, 401, "Unauthorized")
+		httpResponseError(ctx, 401, "Unauthorized")
 	}
 }
 
@@ -82,22 +55,33 @@ func apiAuthValidate(ctx *context.Context) bool {
 		return false
 	}
 
+	findOrAddApp(appId)
+
 	return true
 }
 
-func httpResponseError(w http.ResponseWriter, status int, message string) {
-	error := httpError{message}
-	b, _ := json.Marshal(error)
+func httpResponseJson(ctx *context.Context, status int, data interface{}) {
+	ctx.ResponseWriter.Header().Set("Content-Type", "application/json")
+	ctx.ResponseWriter.WriteHeader(status)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	w.Write(b)
-	w.Write([]byte("\n"))
+	ctx.Output.Json(data, false, false)
 }
 
-func httpResponse(w http.ResponseWriter, status int, body string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	w.Write([]byte(body))
-	w.Write([]byte("\n"))
+func httpResponseError(ctx *context.Context, status int, message string) {
+	error := httpError{message}
+
+	httpResponseJson(ctx, status, error)
+}
+
+func (c *ApiBaseController) HttpResponseJson(status int, data interface{}) {
+	httpResponseJson(c.Ctx, status, data)
+}
+
+func (c *ApiBaseController) HttpResponseError(status int, message string) {
+	httpResponseError(c.Ctx, status, message)
+}
+
+func (c *ApiBaseController) app() *models.App {
+	appId := c.Ctx.Input.Params[":appId"]
+	return getApp(appId)
 }

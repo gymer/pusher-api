@@ -13,7 +13,7 @@ import (
 	"github.com/astaxie/beego"
 )
 
-func init() {
+func Config() {
 	ns := beego.NewNamespace("/v1",
 		beego.NSNamespace("/ws",
 			beego.NSInclude(
@@ -22,9 +22,11 @@ func init() {
 		),
 		beego.NSNamespace("/apps",
 			beego.NSInclude(
-				&controllers.APIController{},
+				&controllers.EventsController{},
+				&controllers.ChannelsController{},
 			),
 		),
 	)
 	beego.AddNamespace(ns)
+	controllers.ApiFilters()
 }

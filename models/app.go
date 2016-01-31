@@ -23,6 +23,10 @@ func (a *App) RemoveClient(client *WSClient) {
 	}
 }
 
+func (a *App) ChannelSubscribers(name string) map[*WSClient]bool {
+	return a.Subscriptions[name]
+}
+
 func (a *App) SubscribeToChannel(client *WSClient, channel string) {
 	if a.Subscriptions[channel] == nil {
 		a.Subscriptions[channel] = make(map[*WSClient]bool)
