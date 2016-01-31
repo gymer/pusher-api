@@ -6,7 +6,6 @@ type ChannelsController struct {
 
 // @Title GET channel
 // @Description Fetch info for channel
-// @Param body    body  models.Event true    "body for event content"
 // @Success 200 body is empty
 // @Failure 404 body is empty
 // @router /:appId/channels/:channelName [get]
@@ -22,4 +21,27 @@ func (c *ChannelsController) Get() {
 	}
 
 	c.HttpResponseJson(200, channel)
+}
+
+// @Title GET channel users
+// @Description Fetch all users subscribed to the channel
+// @Success 200 body is empty
+// @Failure 404 body is empty
+// @router /:appId/channels/:channelName/users [get]
+func (c *ChannelsController) GetUsers() {
+	app := c.app()
+	channelName := c.Ctx.Input.Params[":channelName"]
+	subscrubers := app.ChannelSubscribers(channelName)
+	usersSlice := make([]flatJson, len(subscrubers))
+	i := 0
+
+	for client, subscribed := range subscrubers {
+		if subscribed {
+			usersSlice[i] = flatJson{"id": client.Uuid}
+			i++
+		}
+	}
+
+	users := flatJson{"users": usersSlice}
+	c.HttpResponseJson(200, users)
 }

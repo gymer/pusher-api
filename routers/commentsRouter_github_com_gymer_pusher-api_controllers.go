@@ -13,6 +13,13 @@ func init() {
 			[]string{"get"},
 			nil})
 
+	beego.GlobalControllerRouter["github.com/gymer/pusher-api/controllers:ChannelsController"] = append(beego.GlobalControllerRouter["github.com/gymer/pusher-api/controllers:ChannelsController"],
+		beego.ControllerComments{
+			"GetUsers",
+			`/:appId/channels/:channelName/users`,
+			[]string{"get"},
+			nil})
+
 	beego.GlobalControllerRouter["github.com/gymer/pusher-api/controllers:EventsController"] = append(beego.GlobalControllerRouter["github.com/gymer/pusher-api/controllers:EventsController"],
 		beego.ControllerComments{
 			"Post",
