@@ -10,13 +10,13 @@ import (
 )
 
 type Event struct {
-	Name    string            `json:"event"`
-	Channel string            `json:"channel"`
-	Data    map[string]string `json:"data"`
+	Name    string                 `json:"event"`
+	Channel string                 `json:"channel"`
+	Data    map[string]interface{} `json:"data"`
 }
 
 func (e *Event) GetName() string {
-	return strings.Split(e.Name, "gymmer:")[1]
+	return strings.Split(e.Name, "gymer:")[1]
 }
 
 type WSClient struct {

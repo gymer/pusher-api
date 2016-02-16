@@ -42,16 +42,16 @@ func closeWS(ws *websocket.Conn, code int, reason string) {
 	ws.Close()
 }
 
-func newEvent(name string, channel string, data map[string]string) models.Event {
+func newEvent(name string, channel string, data map[string]interface{}) models.Event {
 	if data == nil {
-		data = make(map[string]string)
+		data = make(map[string]interface{})
 	}
 
 	return models.Event{Name: name, Channel: channel, Data: data}
 }
 
-func newServiceEvent(name string, channel string, data map[string]string) models.Event {
-	return newEvent("gymmer:"+name, channel, data)
+func newServiceEvent(name string, channel string, data map[string]interface{}) models.Event {
+	return newEvent("gymer:"+name, channel, data)
 }
 
 func broadcastEvent(app *models.App, event models.Event) int {
@@ -102,7 +102,7 @@ func appDispatcher() {
 			var app *models.App = findOrAddApp(connect_client.AppID)
 
 			app.AddClient(connect_client)
-			data := map[string]string{
+			data := map[string]interface{}{
 				"socket_id": connect_client.Uuid,
 			}
 			connect_client.Push(newServiceEvent("connection_established", "", data))
