@@ -1,7 +1,10 @@
 package models
 
 import (
+	"fmt"
+
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/config"
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
 )
@@ -11,8 +14,20 @@ var (
 	err error
 )
 
-func init() {
-	DB, err = gorm.Open("postgres", "user=postgres dbname=gymmer_development sslmode=disable")
+func ConnectDB() {
+	DBconf, err := config.NewConfig("ini", "conf/database.conf")
+
+	if err != nil {
+		panic(err)
+	}
+
+	var user = DBconf.String(beego.RunMode + "::user")
+	var dbname = DBconf.String(beego.RunMode + "::dbname")
+
+	fmt.Printf("Runmode = %+v \n", beego.RunMode)
+	fmt.Printf("DB Config = %+v \n", DBconf.String(beego.RunMode+"::dbname"))
+
+	DB, err = gorm.Open("postgres", "user="+user+" dbname="+dbname+" sslmode=disable")
 
 	if err != nil {
 		beego.Error(err)
