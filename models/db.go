@@ -21,13 +21,14 @@ func ConnectDB() {
 		panic(err)
 	}
 
+	var host = DBconf.String(beego.RunMode + "::host")
 	var user = DBconf.String(beego.RunMode + "::user")
 	var dbname = DBconf.String(beego.RunMode + "::dbname")
 
 	fmt.Printf("Runmode = %+v \n", beego.RunMode)
 	fmt.Printf("DB Config = %+v \n", DBconf.String(beego.RunMode+"::dbname"))
 
-	DB, err = gorm.Open("postgres", "user="+user+" dbname="+dbname+" sslmode=disable")
+	DB, err = gorm.Open("postgres", "host="+host+" user="+user+" dbname="+dbname+" sslmode=disable")
 
 	if err != nil {
 		beego.Error(err)
