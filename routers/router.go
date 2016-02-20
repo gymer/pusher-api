@@ -14,6 +14,7 @@ import (
 )
 
 func Config() {
+	beego.Errorhandler("404", controllers.NotFound)
 	ns := beego.NewNamespace("/v1",
 		beego.NSNamespace("/ws",
 			beego.NSInclude(

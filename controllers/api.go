@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/base64"
+	"net/http"
 	"strings"
 
 	"github.com/astaxie/beego"
@@ -58,6 +59,11 @@ func apiAuthValidate(ctx *context.Context) bool {
 	findOrAddApp(appId)
 
 	return true
+}
+
+func NotFound(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
 }
 
 func httpResponseJson(ctx *context.Context, status int, data interface{}) {
