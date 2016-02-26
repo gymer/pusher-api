@@ -1,3 +1,4 @@
 *.tmp
 pusher-api
 Godeps/_workspace
+.vagrant
