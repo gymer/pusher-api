@@ -26,9 +26,6 @@ func (c *EventsController) Post() {
 		return
 	}
 
-	Logger.Warn("POST bytes: %+v \n", c.Ctx.Input.RequestBody)
-	Logger.Warn("POST string: %+v \n", string(c.Ctx.Input.RequestBody[:]))
-
 	err := json.Unmarshal(c.Ctx.Input.RequestBody, &event)
 	if err != nil {
 		c.HttpResponseError(400, "Invalid JSON data")

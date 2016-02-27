@@ -26,6 +26,7 @@ func main() {
 	beego.RunMode = env
 
 	if beego.RunMode == "dev" {
+		beego.EnableAdmin = true
 		beego.DirectoryIndex = true
 		beego.StaticDir["/swagger"] = "swagger"
 	}

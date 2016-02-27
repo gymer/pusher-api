@@ -22,12 +22,22 @@ type httpError struct {
 
 func ApiFilters() {
 	beego.InsertFilter("/v1/apps/*", beego.BeforeExec, apiAuthFilter)
+	beego.InsertFilter("/v1/apps/*", beego.AfterExec, loggerFilter, false)
 }
 
 func apiAuthFilter(ctx *context.Context) {
 	if !apiAuthValidate(ctx) {
 		ctx.ResponseWriter.Header().Set("WWW-Authenticate", `Basic realm="API realm"`)
 		httpResponseError(ctx, 401, "Unauthorized")
+	}
+}
+
+func loggerFilter(ctx *context.Context) {
+	Logger.Warn("Started %s %s", ctx.Request.Method, ctx.Request.URL)
+	body := ctx.Input.RequestBody
+
+	if body != nil {
+		Logger.Warn("Parameters: %+v", string(body[:]))
 	}
 }
 
