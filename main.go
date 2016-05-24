@@ -31,6 +31,10 @@ func main() {
 		beego.StaticDir["/swagger"] = "swagger"
 	}
 
+	startServer()
+}
+
+func startServer() {
 	models.ConnectDB()
 	routers.Config()
 	controllers.AppStart()

@@ -2,6 +2,9 @@ package models
 
 import (
 	"fmt"
+	"log"
+
+	"gopkg.in/testfixtures.v1"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/config"
@@ -36,11 +39,19 @@ func ConnectDB() {
 	}
 
 	DB.DB()
+
+	if beego.RunMode == "test" {
+		loadFixtures()
+	}
 	// migrations()
 }
 
-func migrations() {
-	// DB.AutoMigrate(&User{}, &App{})
+func loadFixtures() {
+	err := testfixtures.LoadFixtures("fixtures", DB.DB(), &testfixtures.PostgreSQLHelper{})
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 // func seed() {
