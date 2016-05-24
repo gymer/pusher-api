@@ -1,24 +1,25 @@
 package main
 
 import (
-	"flag"
-
 	"github.com/gymer/pusher-api/controllers"
 	_ "github.com/gymer/pusher-api/docs"
 	"github.com/gymer/pusher-api/models"
 	"github.com/gymer/pusher-api/routers"
 
 	"github.com/astaxie/beego"
+	"github.com/namsral/flag"
 )
 
-var env string
-var port string
+const defaultPort = "3001"
 
-var err error
+var (
+	env, port string
+	err       error
+)
 
 func init() {
 	flag.StringVar(&env, "env", "dev", "set app environment")
-	flag.StringVar(&port, "port", "8081", "listening port")
+	flag.StringVar(&port, "port", defaultPort, "listening port")
 }
 
 func main() {

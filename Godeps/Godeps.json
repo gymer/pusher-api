@@ -19,12 +19,22 @@
 			"Rev": "a89f14d80dab442927bdc11d641aa1250ab8ad71"
 		},
 		{
+			"ImportPath": "github.com/astaxie/beego/grace",
+			"Comment": "v1.5.0-3-ga89f14d",
+			"Rev": "a89f14d80dab442927bdc11d641aa1250ab8ad71"
+		},
+		{
 			"ImportPath": "github.com/astaxie/beego/logs",
 			"Comment": "v1.5.0-3-ga89f14d",
 			"Rev": "a89f14d80dab442927bdc11d641aa1250ab8ad71"
 		},
 		{
 			"ImportPath": "github.com/astaxie/beego/session",
+			"Comment": "v1.5.0-3-ga89f14d",
+			"Rev": "a89f14d80dab442927bdc11d641aa1250ab8ad71"
+		},
+		{
+			"ImportPath": "github.com/astaxie/beego/toolbox",
 			"Comment": "v1.5.0-3-ga89f14d",
 			"Rev": "a89f14d80dab442927bdc11d641aa1250ab8ad71"
 		},
@@ -54,6 +64,15 @@
 			"ImportPath": "github.com/lib/pq/hstore",
 			"Comment": "go1.0-cutoff-59-gb269bd0",
 			"Rev": "b269bd035a727d6c1081f76e7a239a1b00674c40"
+		},
+		{
+			"ImportPath": "github.com/lib/pq/oid",
+			"Comment": "go1.0-cutoff-59-gb269bd0",
+			"Rev": "b269bd035a727d6c1081f76e7a239a1b00674c40"
+		},
+		{
+			"ImportPath": "github.com/namsral/flag",
+			"Rev": "417f4c49833ffa4f4b59bc2d9ef77afa15d4f6e3"
 		},
 		{
 			"ImportPath": "github.com/pborman/uuid",
