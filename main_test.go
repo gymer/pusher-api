@@ -1,4 +1,4 @@
-package tests
+package main
 
 import (
 	"bytes"
@@ -17,14 +17,15 @@ import (
 const (
 	localAddress             string = "localhost:8081"
 	invalidClientAccessToken string = "wrong-access-token"
-	validClientAccessToken   string = "8cb981cfacddfe3c"
-	validServerAccessToken   string = "ecf2734a04c80fed"
+	validClientAccessToken   string = "7f075634bdc4d2ef"
+	validServerAccessToken   string = "97c1aa41fc71b92e"
 	invalidAppID             int    = 124141
 	validAppID               int    = 1
 )
 
 // TestGet is a sample to run an endpoint test
 func TestWS(t *testing.T) {
+
 	Convey("Subject: Wrong app code\n", t, func() {
 		url := "ws://" + localAddress + "/v1/ws/app/" + invalidClientAccessToken
 		ws, r, err := websocket.DefaultDialer.Dial(url, nil)
