@@ -1,12 +1,15 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gymer/pusher-api/controllers"
 	_ "github.com/gymer/pusher-api/docs"
 	"github.com/gymer/pusher-api/models"
-	"github.com/gymer/pusher-api/routers"
 
-	"github.com/astaxie/beego"
+	"net/http"
+
+	"github.com/gorilla/mux"
 	"github.com/namsral/flag"
 )
 
@@ -24,20 +27,21 @@ func init() {
 
 func main() {
 	flag.Parse()
-	beego.RunMode = env
 
-	if beego.RunMode == "dev" {
-		beego.EnableAdmin = true
-		beego.DirectoryIndex = true
-		beego.StaticDir["/swagger"] = "swagger"
-	}
+	r := mux.NewRouter().PathPrefix("/v1").Subrouter()
+	// r.
+
+	// s := r.Host("www.example.com").Subrouter()
+	r.HandleFunc("/ws/app/{key}", controllers.Join)
 
 	startServer()
+
+	http.Handle("/", r)
+	log.Fatal(http.ListenAndServe(":"+defaultPort, nil))
 }
 
 func startServer() {
 	models.ConnectDB()
-	routers.Config()
+	// routers.Config()
 	controllers.AppStart()
-	beego.Run(":" + port)
 }
