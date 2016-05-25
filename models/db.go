@@ -33,12 +33,12 @@ func ConnectDB(env string) {
 		return
 	}
 
-	DB.DB()
-
-	if env == "test" {
+	switch env {
+	case "dev":
+		DB.LogMode(true)
+	case "test":
 		loadFixtures()
 	}
-	// migrations()
 }
 
 func loadFixtures() {

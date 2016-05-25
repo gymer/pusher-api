@@ -6,14 +6,15 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/gymer/pusher-api/models"
-	"github.com/julienschmidt/httprouter"
 	"github.com/pborman/uuid"
 )
 
-func Join(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	appKey := ps.ByName("key")
+func Join(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	appKey := vars["key"]
 
 	// Upgrade from http request to WebSocket.
 	ws, err := websocket.Upgrade(w, r, nil, 1024, 1024)

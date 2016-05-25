@@ -1,12 +1,21 @@
 {
 	"ImportPath": "github.com/gymer/pusher-api",
-	"GoVersion": "go1.6",
-	"GodepVersion": "v70",
+	"GoVersion": "go1.6.2",
 	"Deps": [
 		{
 			"ImportPath": "github.com/astaxie/beego/config",
 			"Comment": "v1.5.0-3-ga89f14d",
 			"Rev": "a89f14d80dab442927bdc11d641aa1250ab8ad71"
+		},
+		{
+			"ImportPath": "github.com/gorilla/context",
+			"Comment": "v1.1-4-gaed02d1",
+			"Rev": "aed02d124ae4a0e94fea4541c8effd05bf0c8296"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Comment": "v1.1-9-gbd09be0",
+			"Rev": "bd09be08ed4377796d312df0a45314e11b8f5dc1"
 		},
 		{
 			"ImportPath": "github.com/gorilla/websocket",
@@ -21,17 +30,7 @@
 			"Rev": "9a4a02dbe491bef4bab3c24fd9f3087d6c4c6690"
 		},
 		{
-			"ImportPath": "github.com/julienschmidt/httprouter",
-			"Comment": "v1.1-29-g77366a4",
-			"Rev": "77366a47451a56bb3ba682481eed85b64fea14e8"
-		},
-		{
 			"ImportPath": "github.com/lib/pq",
-			"Comment": "go1.0-cutoff-59-gb269bd0",
-			"Rev": "b269bd035a727d6c1081f76e7a239a1b00674c40"
-		},
-		{
-			"ImportPath": "github.com/lib/pq/hstore",
 			"Comment": "go1.0-cutoff-59-gb269bd0",
 			"Rev": "b269bd035a727d6c1081f76e7a239a1b00674c40"
 		},
@@ -53,24 +52,14 @@
 			"Rev": "e20084b55acef0ee9b0aa38cad708f830b9537ad"
 		},
 		{
-			"ImportPath": "github.com/smartystreets/assertions/internal/oglematchers",
-			"Comment": "1.5.0-400-ge20084b",
-			"Rev": "e20084b55acef0ee9b0aa38cad708f830b9537ad"
-		},
-		{
 			"ImportPath": "github.com/smartystreets/goconvey/convey",
 			"Comment": "1.5.0-437-ga29728e",
 			"Rev": "a29728e4d70bb23e436d03bee49b1793e70a9352"
 		},
 		{
-			"ImportPath": "github.com/smartystreets/goconvey/convey/gotest",
-			"Comment": "1.5.0-437-ga29728e",
-			"Rev": "a29728e4d70bb23e436d03bee49b1793e70a9352"
-		},
-		{
-			"ImportPath": "github.com/smartystreets/goconvey/convey/reporting",
-			"Comment": "1.5.0-437-ga29728e",
-			"Rev": "a29728e4d70bb23e436d03bee49b1793e70a9352"
+			"ImportPath": "github.com/urfave/negroni",
+			"Comment": "v0.2.0-39-gffbc66b",
+			"Rev": "ffbc66b612ee3eac2eba29aedce4c3a65e4dd0a1"
 		},
 		{
 			"ImportPath": "gopkg.in/testfixtures.v1",

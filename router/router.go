@@ -3,35 +3,10 @@ package router
 import (
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/gymer/pusher-api/controllers"
-	"github.com/julienschmidt/httprouter"
+	"github.com/urfave/negroni"
 )
-
-type Route struct {
-	Name        string
-	Method      string
-	Pattern     string
-	HandlerFunc http.HandlerFunc
-}
-
-var ns1 = namespace("/v1")
-
-type Routes []Route
-
-// var routes = Routes{
-// 	Route{
-// 		"WSConnect",
-// 		"GET",
-// 		"/ws/app/{key}",
-// 		controllers.Join,
-// 	},
-// 	Route{
-// 		"CreateEvent",
-// 		"POST",
-// 		"/events",
-// 		controllers.CreateEvent,
-// 	},
-// }
 
 func namespace(namespace string) func(path string) string {
 	return func(path string) string {
@@ -40,11 +15,16 @@ func namespace(namespace string) func(path string) string {
 }
 
 func Create() http.Handler {
-	router := httprouter.New()
-	router.GET(ns1("/ws/app/:key"), controllers.Join)
-	router.POST(ns1("/apps/:appId/events"), controllers.CreateEvent)
+	r := mux.NewRouter().PathPrefix("/v1").Subrouter()
+	r.Methods("GET").Path("/ws/app/{key}").HandlerFunc(controllers.Join)
 
-	// handler := AddFilter(ns1("/apps/"), AuthMiddleware)(router)
+	appsRouter := mux.NewRouter().PathPrefix("/v1/apps/{appId}").Subrouter()
+	appsRouter.Methods("POST").Path("/events").HandlerFunc(controllers.CreateEvent)
 
-	return AuthMiddleware(router)
+	r.PathPrefix("/apps/{appId}").Handler(negroni.New(
+		negroni.HandlerFunc(AuthMiddleware),
+		negroni.Wrap(appsRouter),
+	))
+
+	return r
 }

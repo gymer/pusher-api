@@ -18,12 +18,18 @@ func NotFound(w http.ResponseWriter, r *http.Request) {
 
 func httpResponseJson(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
 
-	json.NewEncoder(w).Encode(data)
+	json, err := json.Marshal(data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(status)
+	w.Write(json)
 }
 
-func httpResponseError(w http.ResponseWriter, status int, message string) {
+func HttpResponseError(w http.ResponseWriter, status int, message string) {
 	error := httpError{message}
 
 	httpResponseJson(w, status, error)
