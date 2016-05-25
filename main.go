@@ -1,15 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/gymer/pusher-api/controllers"
 	_ "github.com/gymer/pusher-api/docs"
 	"github.com/gymer/pusher-api/models"
+	"github.com/gymer/pusher-api/router"
 
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/namsral/flag"
 )
 
@@ -28,20 +29,17 @@ func init() {
 func main() {
 	flag.Parse()
 
-	r := mux.NewRouter().PathPrefix("/v1").Subrouter()
-	// r.
+	router := router.Create()
+	// loggedRouter := handlers.LoggingHandler(os.Stdout, router)
 
-	// s := r.Host("www.example.com").Subrouter()
-	r.HandleFunc("/ws/app/{key}", controllers.Join)
-
-	startServer()
-
-	http.Handle("/", r)
-	log.Fatal(http.ListenAndServe(":"+defaultPort, nil))
+	startApp()
+	fmt.Printf("Running on port: %+v \n", defaultPort)
+	fmt.Printf("Environment: %+v \n", env)
+	log.Fatal(http.ListenAndServe(":"+defaultPort, router))
 }
 
-func startServer() {
-	models.ConnectDB()
+func startApp() {
+	models.ConnectDB(env)
 	// routers.Config()
 	controllers.AppStart()
 }

@@ -7,8 +7,6 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"github.com/astaxie/beego/logs"
-
 	"github.com/gymer/pusher-api/models"
 )
 
@@ -22,7 +20,6 @@ type DataStore struct {
 }
 
 var (
-	Logger       *logs.BeeLogger
 	store        = DataStore{Apps: make(map[string]*models.App)}
 	wsConnect    = make(chan *models.WSClient)
 	wsDisconnect = make(chan *models.WSClient)
@@ -57,8 +54,6 @@ func newServiceEvent(name string, channel string, data map[string]interface{}) m
 func broadcastEvent(app *models.App, event models.Event) int {
 	pushCount := 0
 
-	log.Printf("Subscribed: %+v", app.Subscriptions[event.Channel])
-
 	if app.Subscriptions[event.Channel] == nil {
 		return pushCount
 	}
@@ -77,9 +72,6 @@ func broadcastEvent(app *models.App, event models.Event) int {
 }
 
 func AppStart() {
-	Logger = logs.NewLogger(10000)
-	Logger.SetLogger("console", "")
-
 	go appDispatcher()
 }
 
@@ -112,7 +104,7 @@ func appDispatcher() {
 
 			if disconnect_client.Conn != nil {
 				disconnect_client.Conn.Close()
-				Logger.Warn("WebSocket closed: %s", disconnect_client.Uuid)
+				log.Printf("WebSocket closed: %s \n", disconnect_client.Uuid)
 			}
 			app.RemoveClient(disconnect_client)
 
@@ -120,7 +112,7 @@ func appDispatcher() {
 			client := message.Client
 			app := getApp(client.AppID)
 			eventName := message.Event.GetName()
-			Logger.Info("App before: %+v", app)
+			// Logger.Info("App before: %+v", app)
 
 			switch eventName {
 			case "subscribe":
@@ -130,11 +122,11 @@ func appDispatcher() {
 				app.UnsubscribeToChannel(client, message.Event.Channel)
 				client.Push(newServiceEvent("unsubscription_success", message.Event.Channel, nil))
 			default:
-				Logger.Info("Unknown event type: %+v", eventName)
+				log.Printf("Unknown event type: %+v", eventName)
 
 			}
 
-			Logger.Info("App after: %+v", app)
+			// Logger.Info("App after: %+v", app)
 		}
 
 	}
