@@ -1,0 +1,7 @@
+webserver_name: staging.api.gymmer.ru
+app_name: pusher-api
+env: prod
+port: 8001
+deploy_user: gymer_deploy
+deploy_directory: /www/{{app_name}}
+binary_local_path: /Users/akrasman/work/gocode/src/github.com/gymer/pusher-api

@@ -33,9 +33,9 @@ func main() {
 	// loggedRouter := handlers.LoggingHandler(os.Stdout, router)
 
 	startApp()
-	fmt.Printf("Running on port: %+v \n", defaultPort)
+	fmt.Printf("Running on port: %+v \n", port)
 	fmt.Printf("Environment: %+v \n", env)
-	log.Fatal(http.ListenAndServe(":"+defaultPort, router))
+	log.Fatal(http.ListenAndServe(":"+port, router))
 }
 
 func startApp() {

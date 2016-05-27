@@ -1,0 +1,31 @@
+- name: Create deployment directory
+  file: path={{deploy_directory}} owner={{deploy_user}} group={{deploy_user}} state=directory
+
+- name: Make shared directories
+  file: path={{deploy_directory}}/shared/{{item}} group={{deploy_user}} owner={{deploy_user}} state=directory
+  with_items:
+    - tmp
+    - log
+    - public
+    - bundle
+    - bin
+    - config
+  tags: shared
+
+- name: Install database.yml
+  template: src=database.yml.j2 dest={{deploy_directory}}/shared/config/database.yml force=yes mode=755 owner={{deploy_user}}
+
+- name: Install secrets.yml
+  template: src=secrets.yml.j2 dest={{deploy_directory}}/shared/config/secrets.yml force=yes mode=755 owner={{deploy_user}}
+
+- name: Copy sudoers file for safety
+  command: cp -f /etc/sudoers /etc/sudoers.tmp
+
+- name: Create sudoers file backup
+  command: cp -f /etc/sudoers /etc/sudoers.bak
+
+- name: Config /ets/sudoers.tmp
+  lineinfile: "dest=/etc/sudoers.tmp state=present regexp='^{{deploy_user}}' line='{{deploy_user}} ALL=(ALL) NOPASSWD: /usr/sbin/update-rc.d -f *{{app_name}}_{{env}} *, /bin/mv /tmp/*{{app_name}}_{{env}} *, /bin/ln -fs /etc/nginx/sites-available/*, /usr/sbin/service unicorn_{{app_name}}_{{env}} *, /etc/init.d/nginx reload'"
+
+- name: Apply config via visudo
+  shell: visudo -q -c -f /etc/sudoers.tmp && cp -f /etc/sudoers.tmp /etc/sudoers

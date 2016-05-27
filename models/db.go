@@ -16,7 +16,7 @@ var (
 )
 
 func ConnectDB(env string) {
-	DBconf, err := config.NewConfig("ini", "conf/database.conf")
+	DBconf, err := config.NewConfig("ini", "config/database.conf")
 
 	if err != nil {
 		panic(err)

@@ -1,0 +1,7 @@
+- name: Create deployment user
+  user: name={{deploy_user}} comment="Application deployment user"
+
+- authorized_key: user={{deploy_user}} key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+- include: rails.yml
+  tags: [rails]
