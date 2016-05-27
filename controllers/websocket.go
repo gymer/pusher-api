@@ -2,47 +2,40 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/gymer/pusher-api/models"
 	"github.com/pborman/uuid"
-
-	"github.com/astaxie/beego"
 )
 
-type WebsocketController struct {
-	beego.Controller
-}
-
-// @Title Get
-// @Description get all Users
-// @Success 200 {object} models.User
-// @router /app/:key [get]
-func (w *WebsocketController) Connect() {
-	appKey := w.Ctx.Input.Params[":key"]
-	uuid := uuid.New()
+func Join(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	appKey := vars["key"]
 
 	// Upgrade from http request to WebSocket.
-	ws, err := websocket.Upgrade(w.Ctx.ResponseWriter, w.Ctx.Request, nil, 1024, 1024)
+	ws, err := websocket.Upgrade(w, r, nil, 1024, 1024)
 	if _, ok := err.(websocket.HandshakeError); ok {
-		http.Error(w.Ctx.ResponseWriter, "Not a websocket handshake", 400)
+		http.Error(w, "Not a websocket handshake", 400)
 		return
 	} else if err != nil {
-		beego.Error("Cannot setup WebSocket connection:", err)
+		http.Error(w, fmt.Sprintf("Cannot setup WebSocket connection: %s", err), 400)
 		return
 	}
 
 	// Validate client_access_token
-	app, err := w.findAppByAccessToken(appKey)
-
+	app, err := findAppByAccessToken(appKey)
 	if err != nil {
 		closeWS(ws, InvalidAppCode, "Invalid app code")
 		return
 	}
 
+	uuid := uuid.New()
 	client := models.WSClient{Uuid: uuid, Conn: ws, AppID: app.ID}
-	Logger.Warn("New websocket connection: %s \n", uuid)
+	log.Printf("New websocket connection: %s \n", uuid)
 
 	connect(&client)
 	defer disconnect(&client)
@@ -63,7 +56,7 @@ func (w *WebsocketController) Connect() {
 	}
 }
 
-func (w *WebsocketController) findAppByAccessToken(key string) (models.App, error) {
+func findAppByAccessToken(key string) (models.App, error) {
 	var app models.App
 	var err error
 

@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	localAddress             string = "localhost:8081"
+	localAddress             string = "localhost:3000"
 	invalidClientAccessToken string = "wrong-access-token"
 	validClientAccessToken   string = "7f075634bdc4d2ef"
 	validServerAccessToken   string = "97c1aa41fc71b92e"
@@ -23,11 +23,19 @@ const (
 	validAppID               int    = 1
 )
 
+func wsUrl(path string) string {
+	return "ws://" + localAddress + "/v1/ws" + path
+}
+
+func httpUrl(path string) string {
+	return "http://" + localAddress + "/v1" + path
+}
+
 // TestGet is a sample to run an endpoint test
 func TestWS(t *testing.T) {
 
 	Convey("Subject: Wrong app code\n", t, func() {
-		url := "ws://" + localAddress + "/v1/ws/app/" + invalidClientAccessToken
+		url := wsUrl("/app/" + invalidClientAccessToken)
 		ws, r, err := websocket.DefaultDialer.Dial(url, nil)
 
 		_, _, err = ws.ReadMessage()
@@ -45,7 +53,7 @@ func TestWS(t *testing.T) {
 	Convey("Subject: Valid app code\n", t, func() {
 		var event models.Event
 
-		url := "ws://localhost:8081/v1/ws/app/" + validClientAccessToken
+		url := wsUrl("/app/" + validClientAccessToken)
 		ws, r, err := websocket.DefaultDialer.Dial(url, nil)
 		defer ws.Close()
 
@@ -80,7 +88,7 @@ func TestWS(t *testing.T) {
 			Convey("Recive push event via API request", func() {
 				var jsonStr = []byte(`{"event": "new_message", "channel":"notifications", "data": {"title": "Hello", "content": "World"}}`)
 
-				req, _ := http.NewRequest("POST", "http://"+localAddress+"/v1/apps/"+strconv.Itoa(validAppID)+"/events", bytes.NewBuffer(jsonStr))
+				req, _ := http.NewRequest("POST", httpUrl("/apps/"+strconv.Itoa(validAppID)+"/events"), bytes.NewBuffer(jsonStr))
 				req.Header.Set("Content-Type", "application/json")
 
 				Convey("With invalid basic auth", func() {

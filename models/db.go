@@ -1,12 +1,10 @@
 package models
 
 import (
-	"fmt"
 	"log"
 
 	"gopkg.in/testfixtures.v1"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/config"
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
@@ -17,33 +15,30 @@ var (
 	err error
 )
 
-func ConnectDB() {
+func ConnectDB(env string) {
 	DBconf, err := config.NewConfig("ini", "conf/database.conf")
 
 	if err != nil {
 		panic(err)
 	}
 
-	var host = DBconf.String(beego.RunMode + "::host")
-	var user = DBconf.String(beego.RunMode + "::user")
-	var dbname = DBconf.String(beego.RunMode + "::dbname")
-
-	fmt.Printf("Runmode = %+v \n", beego.RunMode)
-	fmt.Printf("DB Config = %+v \n", DBconf.String(beego.RunMode+"::dbname"))
+	var host = DBconf.String(env + "::host")
+	var user = DBconf.String(env + "::user")
+	var dbname = DBconf.String(env + "::dbname")
 
 	DB, err = gorm.Open("postgres", "host="+host+" user="+user+" dbname="+dbname+" sslmode=disable")
 
 	if err != nil {
-		beego.Error(err)
+		log.Fatalln(err)
 		return
 	}
 
-	DB.DB()
-
-	if beego.RunMode == "test" {
+	switch env {
+	case "dev":
+		DB.LogMode(true)
+	case "test":
 		loadFixtures()
 	}
-	// migrations()
 }
 
 func loadFixtures() {
