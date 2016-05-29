@@ -1,6 +1,7 @@
 {
 	"ImportPath": "github.com/gymer/pusher-api",
-	"GoVersion": "go1.6.2",
+	"GoVersion": "go1.6",
+	"GodepVersion": "v72",
 	"Deps": [
 		{
 			"ImportPath": "github.com/astaxie/beego/config",
@@ -35,6 +36,16 @@
 			"Rev": "b269bd035a727d6c1081f76e7a239a1b00674c40"
 		},
 		{
+			"ImportPath": "github.com/lib/pq/hstore",
+			"Comment": "go1.0-cutoff-59-gb269bd0",
+			"Rev": "b269bd035a727d6c1081f76e7a239a1b00674c40"
+		},
+		{
+			"ImportPath": "github.com/lib/pq/oid",
+			"Comment": "go1.0-cutoff-59-gb269bd0",
+			"Rev": "b269bd035a727d6c1081f76e7a239a1b00674c40"
+		},
+		{
 			"ImportPath": "github.com/namsral/flag",
 			"Rev": "417f4c49833ffa4f4b59bc2d9ef77afa15d4f6e3"
 		},
@@ -52,7 +63,22 @@
 			"Rev": "e20084b55acef0ee9b0aa38cad708f830b9537ad"
 		},
 		{
+			"ImportPath": "github.com/smartystreets/assertions/internal/oglematchers",
+			"Comment": "1.5.0-400-ge20084b",
+			"Rev": "e20084b55acef0ee9b0aa38cad708f830b9537ad"
+		},
+		{
 			"ImportPath": "github.com/smartystreets/goconvey/convey",
+			"Comment": "1.5.0-437-ga29728e",
+			"Rev": "a29728e4d70bb23e436d03bee49b1793e70a9352"
+		},
+		{
+			"ImportPath": "github.com/smartystreets/goconvey/convey/gotest",
+			"Comment": "1.5.0-437-ga29728e",
+			"Rev": "a29728e4d70bb23e436d03bee49b1793e70a9352"
+		},
+		{
+			"ImportPath": "github.com/smartystreets/goconvey/convey/reporting",
 			"Comment": "1.5.0-437-ga29728e",
 			"Rev": "a29728e4d70bb23e436d03bee49b1793e70a9352"
 		},

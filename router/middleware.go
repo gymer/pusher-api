@@ -1,12 +1,32 @@
 package router
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net/http"
+	"time"
 
+	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/gymer/pusher-api/controllers"
 	"github.com/gymer/pusher-api/models"
 )
+
+const Body int = 0
+
+func BaseMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	body, err := ioutil.ReadAll(r.Body)
+
+	if err != nil {
+		fmt.Printf("Request body error: %s \n", err)
+	}
+
+	context.Set(r, Body, body)
+
+	next(w, r)
+
+	context.Clear(r)
+}
 
 func AuthMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	var app models.App
@@ -26,4 +46,18 @@ func AuthMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFun
 	}
 
 	next(w, r)
+}
+
+func LoggerMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	start := time.Now()
+	body := context.Get(r, Body)
+
+	fmt.Printf("Instance: %+v \n", serverPort)
+	fmt.Printf("Started %s %s at %s \n", r.Method, r.URL.Path, start)
+
+	fmt.Printf("Body: %s \n", body)
+
+	next(w, r)
+
+	fmt.Printf("Finished: %s \n\n\n", time.Since(start))
 }

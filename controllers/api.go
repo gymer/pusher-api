@@ -3,6 +3,8 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/gorilla/context"
 )
 
 type flatJson map[string]interface{}
@@ -33,4 +35,11 @@ func HttpResponseError(w http.ResponseWriter, status int, message string) {
 	error := httpError{message}
 
 	httpResponseJson(w, status, error)
+}
+
+func requestBody(r *http.Request) []byte {
+	if rv := context.Get(r, 0); rv != nil {
+		return rv.([]byte)
+	}
+	return nil
 }

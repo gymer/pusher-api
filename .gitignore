@@ -2,7 +2,6 @@
 *.tmp
 pusher-api
 Godeps/_workspace
-vendor
 .vagrant
 *.pprof
 *.memprof

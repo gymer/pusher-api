@@ -8,13 +8,17 @@ import (
 	"github.com/urfave/negroni"
 )
 
+var serverPort string
+
 func namespace(namespace string) func(path string) string {
 	return func(path string) string {
 		return namespace + path
 	}
 }
 
-func Create() http.Handler {
+func Create(port string, env string) http.Handler {
+	serverPort = port
+
 	r := mux.NewRouter().PathPrefix("/v1").Subrouter()
 	r.Methods("GET").Path("/ws/app/{key}").HandlerFunc(controllers.Join)
 
@@ -26,5 +30,12 @@ func Create() http.Handler {
 		negroni.Wrap(appsRouter),
 	))
 
-	return r
+	n := negroni.New(negroni.HandlerFunc(BaseMiddleware))
+	if env == "dev" {
+		n.Use(negroni.HandlerFunc(LoggerMiddleware))
+	}
+
+	n.UseHandler(r)
+
+	return n
 }

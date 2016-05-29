@@ -35,7 +35,7 @@ func ConnectDB(env string) {
 
 	switch env {
 	case "dev":
-		DB.LogMode(true)
+		// DB.LogMode(true)
 	case "test":
 		loadFixtures()
 	}

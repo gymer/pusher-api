@@ -29,7 +29,7 @@ func init() {
 func main() {
 	flag.Parse()
 
-	router := router.Create()
+	router := router.Create(port, env)
 	// loggedRouter := handlers.LoggingHandler(os.Stdout, router)
 
 	startApp()

@@ -1,3 +1,6 @@
+- name: apt upgrade
+  action: apt update_cache=yes upgrade=yes
+
 - name: Install nginx
   apt: pkg=nginx state=latest
 
