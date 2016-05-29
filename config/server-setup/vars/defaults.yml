@@ -3,5 +3,3 @@
 webserver_name: 
 app_name: gymer-api
 env: dev
-deploy_user: gymer_deploy
-deploy_directory: /www/{{app_name}}_{{env}}

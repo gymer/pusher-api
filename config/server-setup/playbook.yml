@@ -3,6 +3,7 @@
   hosts: all
   sudo: true
   vars_files:
-    - vars/go-app.yml
+    - vars/defaults.yml
   roles:
-    - { role: nginx, tags: ['go'] }
+    - nginx
+    - redis

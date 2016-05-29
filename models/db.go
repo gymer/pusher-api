@@ -22,11 +22,13 @@ func ConnectDB(env string) {
 		panic(err)
 	}
 
-	var host = DBconf.String(env + "::host")
-	var user = DBconf.String(env + "::user")
-	var dbname = DBconf.String(env + "::dbname")
+	config, err := DBconf.GetSection(env)
 
-	DB, err = gorm.Open("postgres", "host="+host+" user="+user+" dbname="+dbname+" sslmode=disable")
+	if err != nil {
+		panic(err)
+	}
+
+	DB, err = gorm.Open("postgres", "host="+config["host"]+" user="+config["user"]+" dbname="+config["dbname"]+" sslmode=disable")
 
 	if err != nil {
 		log.Fatalln(err)
