@@ -2,9 +2,12 @@ package controllers
 
 import (
 	"container/list"
+	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
+	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/websocket"
 
 	"github.com/gymer/pusher-api/models"
@@ -24,6 +27,7 @@ var (
 	wsConnect    = make(chan *models.WSClient)
 	wsDisconnect = make(chan *models.WSClient)
 	wsMessage    = make(chan models.WSMessage, 10)
+	redisConn    redis.Conn
 )
 
 func connect(client *models.WSClient) {
@@ -54,25 +58,51 @@ func newServiceEvent(name string, channel string, data map[string]interface{}) m
 func broadcastEvent(app *models.App, event models.Event) int {
 	pushCount := 0
 
-	if app.Subscriptions[event.Channel] == nil {
-		return pushCount
+	c, err := redis.Dial("tcp", ":6378")
+	if err != nil {
+		panic(err)
+	}
+	defer c.Close()
+
+	event.AppId = app.ID
+
+	b, _ := json.Marshal(event)
+
+	c.Send("PUBLISH", "messages", b)
+	c.Flush()
+
+	return pushCount
+}
+
+func pushClients(event models.Event) {
+	app := getApp(event.AppId)
+
+	if app == nil {
+		return
 	}
 
 	for client, subscribed := range app.Subscriptions[event.Channel] {
 		if subscribed {
 			if err := client.Push(event); err == nil {
-				pushCount += 1
 			} else {
 				disconnect(client)
 			}
 		}
 	}
+}
 
-	return pushCount
+func redisMessage(m redis.Message) {
+	switch m.Channel {
+	case "messages":
+		var e models.Event
+		json.Unmarshal(m.Data, &e)
+		pushClients(e)
+	}
 }
 
 func AppStart() {
 	go appDispatcher()
+	go psDispatcher()
 }
 
 func findOrAddApp(appID string) *models.App {
@@ -87,7 +117,33 @@ func getApp(appID string) *models.App {
 	return store.Apps[appID]
 }
 
+func psDispatcher() {
+	redisConn, err := redis.Dial("tcp", ":6378")
+	if err != nil {
+		panic(err)
+	}
+	defer redisConn.Close()
+	psc := redis.PubSubConn{Conn: redisConn}
+	psc.Subscribe("messages")
+
+	for {
+		switch n := psc.Receive().(type) {
+		case redis.Message:
+			redisMessage(n)
+		case redis.Subscription:
+			fmt.Printf("Subscription: %s %s %d\n", n.Kind, n.Channel, n.Count)
+			if n.Count == 0 {
+				return
+			}
+		case error:
+			fmt.Printf("error: %v\n", n)
+			return
+		}
+	}
+}
+
 func appDispatcher() {
+
 	for {
 		select {
 		case connect_client := <-wsConnect:

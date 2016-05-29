@@ -10,6 +10,7 @@ import (
 )
 
 type Event struct {
+	AppId   string
 	Name    string                 `json:"event"`
 	Channel string                 `json:"channel"`
 	Data    map[string]interface{} `json:"data"`
