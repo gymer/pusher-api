@@ -1,16 +1,45 @@
 package main
 
 import (
-	_ "github.com/Iverson/pusher-api/docs"
-	_ "github.com/Iverson/pusher-api/routers"
+	"fmt"
+	"log"
 
-	"github.com/astaxie/beego"
+	"github.com/gymer/pusher-api/controllers"
+	_ "github.com/gymer/pusher-api/docs"
+	"github.com/gymer/pusher-api/models"
+	"github.com/gymer/pusher-api/router"
+
+	"net/http"
+
+	"github.com/namsral/flag"
 )
 
+const defaultPort = "3001"
+
+var (
+	env, port string
+	err       error
+)
+
+func init() {
+	flag.StringVar(&env, "env", "dev", "set app environment")
+	flag.StringVar(&port, "port", defaultPort, "listening port")
+}
+
 func main() {
-	if beego.RunMode == "dev" {
-		beego.DirectoryIndex = true
-		beego.StaticDir["/swagger"] = "swagger"
-	}
-	beego.Run()
+	flag.Parse()
+
+	router := router.Create(port, env)
+	// loggedRouter := handlers.LoggingHandler(os.Stdout, router)
+
+	startApp()
+	fmt.Printf("Running on port: %+v \n", port)
+	fmt.Printf("Environment: %+v \n", env)
+	log.Fatal(http.ListenAndServe(":"+port, router))
+}
+
+func startApp() {
+	models.ConnectDB(env)
+	// routers.Config()
+	controllers.AppStart()
 }

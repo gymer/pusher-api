@@ -1,0 +1,22 @@
+- name: apt upgrade
+  action: apt update_cache=yes upgrade=yes
+
+- name: Install nginx
+  apt: pkg=nginx state=latest
+
+- name: Remove the default app
+  command: rm -rf /etc/nginx/sites-enabled/default
+
+- name: Remove the app's config, if exists
+  command: rm -rf /etc/nginx/sites-enabled/default
+
+- name: Remove the app's symlink, if exists
+  command: rm -rf /etc/nginx/sites-enabled/{{app_name}}
+
+- include: balancer.yml
+  tags: [go-app]
+
+- name: Enable the app
+  command: ln -s /etc/nginx/sites-available/{{app_name}} /etc/nginx/sites-enabled/{{app_name}}
+  notify:
+    - restart nginx

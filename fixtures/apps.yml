@@ -1,0 +1,9 @@
+-
+  id: 1
+  user_id: 1
+  name: test_app
+  server_access_token: 97c1aa41fc71b92e
+  client_access_token: 7f075634bdc4d2ef
+  created_at: 2016-01-01 12:30:12
+  updated_at: 2016-01-01 12:30:12
+  

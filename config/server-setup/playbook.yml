@@ -1,0 +1,9 @@
+---
+- name: Setup server configuration for pusher API
+  hosts: all
+  sudo: true
+  vars_files:
+    - vars/defaults.yml
+  roles:
+    - nginx
+    - redis
